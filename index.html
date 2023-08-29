@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+
+</head>
+
+<body class="bg-light">
+    <div id="app">
+
+        <div>
+            <div class="container">
+
+                <div class="row">
+                    <div class="col">
+                        <div class="py-5 text-center">
+                            <h1>パスワード解析</h1>
+                            <div class="mt-3">
+                                5桁以内の半角英数字を入力してください。<br>
+                                英数字は大文字小文字が混在してもかまいません。
+                            </div>
+                            <div class="mt-3">
+                                <input type="text" maxlength="5" minlength="1" pattern="^[0-9a-zA-Z]+$"
+                                    class="mx-auto text-center form-control fw-bold" v-model="inputPass"
+                                    style="max-width: 200px;">
+                            </div>
+                            <div class="mt-3" v-if="inputPass && !checkPass(inputPass)">
+                                <div class="alert alert-warning">
+                                    半角英数字（0から9、aからz、AからZ）のみで入力してください。
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-primary" v-on:click="checkInput($event)"
+                                    :disabled="isCheck || !inputPass || !checkPass(inputPass)">
+                                    何を入力されたか解析する
+                                </button>
+                            </div>
+
+                            <div class="mt-3" v-if="totalCount !== 0">
+                                現在<strong>{{totalCount}}</strong>回試行中です。
+                            </div>
+                            <div v-if="totalCount == checkLimit">
+                                パスワードは見つかりませんでした。
+                            </div>
+                            <div class="mt-3" v-if="dummyPass">
+                                確認したパスワード：{{dummyPass}}
+                            </div>
+
+                            <div class="mt-3" v-if="isSame">
+                                <div><span class="text-primary strong">見つかりました！</span></div>
+                                <div>
+                                    あなたが入力したパスワードは
+                                </div>
+                                <div>
+                                    <strong>{{dummyPass}}</strong>
+                                </div>
+                                ですね？
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    inputPass: "",
+                    dummyPass: '',
+                    checkCount: 0,
+                    isSame: false,
+                    isCheck: false,
+                    totalCount: 0,
+                    checkLimit: 100000,
+                }
+            },
+            methods: {
+                checkPass(pass) {
+                    const vm = this;
+                    return /^[0-9a-zA-Z]+$/.test(pass)
+                },
+                async checInputExec(len) {
+                    const vm = this;
+                    let i = 0;
+                    while (i <= vm.checkLimit) {
+
+                        vm.$set(vm, 'dummyPass', vm.decimalToBase38(i))
+
+                        console.log([vm.dummyPass, vm.inputPass])
+
+                        if (vm.inputPass === vm.dummyPass) {
+                            vm.$set(vm, 'isSame', true)
+                            break;
+                        }
+                        vm.$set(vm, 'totalCount', vm.totalCount + 1)
+                        i = i + 1
+                        await vm.delay(0);
+
+                    }
+                    vm.$set(vm, 'isCheck', false)
+
+
+                },
+                delay(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
+                },
+                checkInput($event) {
+                    const vm = this;
+
+                    vm.$set(vm, 'isCheck', true)
+                    vm.$set(vm, 'isSame', false)
+                    vm.$set(vm, 'totalCount', 0)
+
+                    vm.checInputExec(1)
+                },
+                decimalToBase38(decimalNumber) {
+                    if (decimalNumber === 0) {
+                        return '0';
+                    }
+
+                    const base38Chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    let result = '';
+
+                    while (decimalNumber > 0) {
+                        const remainder = decimalNumber % 38;
+                        result = base38Chars[remainder] + result;
+                        decimalNumber = Math.floor(decimalNumber / 38);
+                    }
+                    return result;
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>
