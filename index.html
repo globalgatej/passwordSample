@@ -22,17 +22,16 @@
                         <div class="py-5 text-center">
                             <h1>パスワード解析</h1>
                             <div class="mt-3">
-                                5桁以内の半角英数字を入力してください。<br>
-                                英数字は大文字小文字が混在してもかまいません。
+                                5桁以内の半角英数字を入力してください。
                             </div>
                             <div class="mt-3">
-                                <input type="text" maxlength="5" minlength="1" pattern="^[0-9a-zA-Z]+$"
+                                <input type="text" maxlength="5" minlength="1" pattern="^[0-9a-z]+$"
                                     class="mx-auto text-center form-control fw-bold" v-model="inputPass"
                                     style="max-width: 200px;">
                             </div>
                             <div class="mt-3" v-if="inputPass && !checkPass(inputPass)">
                                 <div class="alert alert-warning">
-                                    半角英数字（0から9、aからz、AからZ）のみで入力してください。
+                                    半角英数字（0から9、aからz）のみで入力してください。
                                 </div>
                             </div>
                             <div class="mt-3">
@@ -94,7 +93,7 @@
                     let i = 0;
                     while (i <= vm.checkLimit) {
 
-                        vm.$set(vm, 'dummyPass', vm.decimalToBase38(i))
+                        vm.$set(vm, 'dummyPass', vm.decimalToBase(i))
 
                         console.log([vm.dummyPass, vm.inputPass])
 
@@ -123,18 +122,19 @@
 
                     vm.checInputExec(1)
                 },
-                decimalToBase38(decimalNumber) {
+                decimalToBase(decimalNumber) {
                     if (decimalNumber === 0) {
                         return '0';
                     }
 
-                    const base38Chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                    const baseChars = '0123456789abcdefghijklmnopqrstuvwxyz';
+                    const baseCharsLength = baseChars.length
                     let result = '';
 
                     while (decimalNumber > 0) {
-                        const remainder = decimalNumber % 38;
-                        result = base38Chars[remainder] + result;
-                        decimalNumber = Math.floor(decimalNumber / 38);
+                        const remainder = decimalNumber % baseCharsLength;
+                        result = baseChars[remainder] + result;
+                        decimalNumber = Math.floor(decimalNumber / baseCharsLength);
                     }
                     return result;
                 }
